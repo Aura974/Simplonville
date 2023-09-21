@@ -6,7 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 export default function Page() {
   return (
     <SafeAreaProvider>
-      <Link href="/about" asChild>
+      <Link href="/home" asChild>
         <Pressable>
           <Text>Home</Text>
         </Pressable>
