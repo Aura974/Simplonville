@@ -29,6 +29,21 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "48f60dff-23e1-4272-bf8d-d9edf945d0d8"
+      }
+    },
+    "owner": "aura974",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/48f60dff-23e1-4272-bf8d-d9edf945d0d8"
+    }
   }
 }

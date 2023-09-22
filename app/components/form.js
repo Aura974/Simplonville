@@ -2,14 +2,47 @@ import { Text, View, TextInput, Alert, StyleSheet } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import SelectDropdown from "react-native-select-dropdown";
 import MapView, { Marker } from "react-native-maps";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { FontAwesome } from "@expo/vector-icons";
+import * as Location from "expo-location";
 
 import Button from "./button";
 
 
 export default function FormComponent() {
+
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [initialRegion, setInitialRegion] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setCurrentLocation(location.coords);
+      setInitialRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      });
+    })();
+  }, []);
+
+  // let text = 'Waiting..';
+  // if (errorMsg) {
+  //   text = errorMsg;
+  // } else if (location) {
+  //   text = JSON.stringify(location);
+  // }
+
   const {
     control,
     handleSubmit,
@@ -21,10 +54,7 @@ export default function FormComponent() {
     },
   })
 
-  const [markerPosition, setMarkerPosition] = useState({
-    latitude: null,
-    longitude: null,
-  })
+  const [markerPosition, setMarkerPosition] = useState({});
 
   const handleMapPress = async (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
@@ -113,24 +143,27 @@ export default function FormComponent() {
 
       <View style={styles.mapContainer}>
           <MapView style={styles.map}
-            initialRegion={{
-              latitude: 37.78825,
-              longitude: -122.4324,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
+            initialRegion={initialRegion}
           >
-          <Marker
-             draggable
-             coordinate={{
-               latitude: 37.78825,
-               longitude: -122.4324,
-             }}
-             title={"titre"}
-             onDragEnd={handleMapPress}
-          />
+          {currentLocation && (
+            <Marker
+              draggable
+              coordinate={{
+                latitude: currentLocation.latitude,
+                longitude: currentLocation.longitude,
+              }}
+              title="Your location"
+              onDragEnd={handleMapPress}
+            />
+          )}
           </MapView>
       </View>
+
+      {/* <View>
+        <Text>
+          {text}
+        </Text>
+      </View> */}
 
       <View>
         <Text>latitude: {markerPosition.latitude}</Text>
@@ -138,7 +171,7 @@ export default function FormComponent() {
       </View>
 
       <View style={styles.footerContainer}>
-        <Button label="Envoyer" /> 
+        <Button label="Envoyer" onPress={handleSubmit}/> 
       </View>
 
       <StatusBar style="auto" />
