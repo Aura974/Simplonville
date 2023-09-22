@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Location from "expo-location";
+import axios from "axios";
 
 import Button from "./button";
 
@@ -14,7 +15,9 @@ export default function FormComponent() {
 
   const [currentLocation, setCurrentLocation] = useState(null);
   const [initialRegion, setInitialRegion] = useState(null);
+  const [formattedAddress, setFormattedAddress] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [markerPosition, setMarkerPosition] = useState({});
 
   useEffect(() => {
     (async () => {
@@ -36,12 +39,16 @@ export default function FormComponent() {
     })();
   }, []);
 
-  // let text = 'Waiting..';
-  // if (errorMsg) {
-  //   text = errorMsg;
-  // } else if (location) {
-  //   text = JSON.stringify(location);
-  // }
+  const getAddress = (lat, lon) => {
+    axios.get(`https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&format=json&apiKey=9069cdc90b5c4f049c7c7fa24ebbdac3`)
+    .then(function (response) {
+        setFormattedAddress(response.data.results[0].formatted);
+        console.log(response.data.results[0].formatted)
+    })
+    .catch(function (error) {
+        console.log(error);
+    })
+}
 
   const {
     control,
@@ -54,22 +61,11 @@ export default function FormComponent() {
     },
   })
 
-  const [markerPosition, setMarkerPosition] = useState({});
-
-  const handleMapPress = async (event) => {
+  const getCoords = async (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setMarkerPosition({ latitude, longitude });
+    getAddress(latitude, longitude);
     console.log("latitude:", latitude, "longitude:", longitude);
-
-  
-     // Convertir les coordonnées en adresse
-    //  try {
-    //   const address = await convertCoordinatesToAddress(latitude, longitude);
-    //   setConvertedAddress(address);
-    // } catch (error) {
-    //   console.error('Erreur lors de la conversion des coordonnées en adresse :', error);
-    //   setConvertedAddress('Erreur de géocodage');
-    // }
   };
 
   const items = ["Apple", "Banana"]
@@ -153,21 +149,14 @@ export default function FormComponent() {
                 longitude: currentLocation.longitude,
               }}
               title="Your location"
-              onDragEnd={handleMapPress}
+              onDragEnd={getCoords}
             />
           )}
           </MapView>
       </View>
 
-      {/* <View>
-        <Text>
-          {text}
-        </Text>
-      </View> */}
-
       <View>
-        <Text>latitude: {markerPosition.latitude}</Text>
-        <Text>longitude: {markerPosition.longitude}</Text>
+        <Text>{formattedAddress}</Text>
       </View>
 
       <View style={styles.footerContainer}>
