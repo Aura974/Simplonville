@@ -1,12 +1,13 @@
-import { Text, View, TextInput, Alert, StyleSheet } from "react-native";
+import { Text, View, TextInput, Image, StyleSheet } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import SelectDropdown from "react-native-select-dropdown";
 import MapView, { Marker } from "react-native-maps";
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { FontAwesome } from "@expo/vector-icons";
-import * as Location from "expo-location";
 import axios from "axios";
+import * as Location from "expo-location";
+import * as ImagePicker from "expo-image-picker";
 
 import Button from "./button";
 
@@ -17,7 +18,10 @@ export default function FormComponent() {
   const [initialRegion, setInitialRegion] = useState(null);
   const [formattedAddress, setFormattedAddress] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const items = ["Voirie", "Accident", "Stationnement"]
   const [markerPosition, setMarkerPosition] = useState({});
+  const imageSource = selectedImage  ? { uri: selectedImage } : null;
 
   useEffect(() => {
     (async () => {
@@ -64,12 +68,21 @@ export default function FormComponent() {
   const getCoords = async (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setMarkerPosition({ latitude, longitude });
-    getAddress(latitude, longitude);
-    console.log("latitude:", latitude, "longitude:", longitude);
+    getAddress(markerPosition["latitude"], markerPosition["longitude"]);
   };
 
-  const items = ["Apple", "Banana"]
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
 
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
   const onSubmit = (data) => console.log(data)
 
   return (
@@ -159,6 +172,17 @@ export default function FormComponent() {
         <Text>{formattedAddress}</Text>
       </View>
 
+      <View style={styles.imageContainer}>
+        <Image
+          selectedImage={selectedImage}
+          source={imageSource}
+        />
+      </View>
+
+      <View style={styles.choosePictureContainer}>
+        <Button label="Choisir une photo" onPress={pickImageAsync}/>
+      </View>
+
       <View style={styles.footerContainer}>
         <Button label="Envoyer" onPress={handleSubmit}/> 
       </View>
@@ -223,6 +247,13 @@ const styles = StyleSheet.create({
   map: {
     width: "100%",
     height: "100%",
+  },
+  choosePictureContainer: {
+    alignItems: "center",
+    flex: 1 / 4,
+  },
+  imageContainer: {
+
   },
   footerContainer: {
     flex: 1 / 3,

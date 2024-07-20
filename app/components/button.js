@@ -1,6 +1,6 @@
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 
-export default function Button({ label,  theme }) {
+export default function Button({ label,  onPress }) {
 
     return (
       <View
@@ -8,7 +8,7 @@ export default function Button({ label,  theme }) {
       >
         <Pressable
           style={[styles.button, { backgroundColor: "#fff" }]}
-          onPress={() => alert('Submit')}
+          onPress={onPress}
         >
             <Text style={[styles.buttonLabel, { color: "#25292e" }]}>{label}</Text>
         </Pressable>
